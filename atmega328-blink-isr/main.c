@@ -16,25 +16,25 @@ ISR(TIMER1_COMPB_vect)
 void setup_isr()
 {
 	TCCR1B |= 1<<WGM13 | 1<<WGM12;	// Mode 12, CTC
-	TIMSK1 |= 1<<OCIE1B;            // Enable Timer/Counter1 output compare B 
-	                                //   match interrupt
+	TIMSK1 |= 1<<OCIE1B;            // Enable Timer/Counter1 output compare B
+									//   match interrupt
 
 	//16 bit timer. Max count is 65535
 	//16,000,000 / 2 * 256 * (1+65535) = 0.57 Hz (1/2s on, 1/2s off)
-    TCCR1B = 1 << CS12; //256 pre-scaler
+	TCCR1B = 1 << CS12; //256 pre-scaler
 }
 
 int main(void)
 {
-	// Built in LED = Pin13 on board = PortB/BIT5 
+	// Built in LED = Pin13 on board = PortB/BIT5
 	SET_BIT(DDRB,PD5);   // Set Data Direction Register to Output
 	
-    setup_isr();
+	setup_isr();
 	
 	sei();
 	
-    while(1)
-    {
+	while(1)
+	{
 		// Do nothing
-    }
+	}
 }

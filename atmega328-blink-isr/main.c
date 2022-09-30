@@ -1,5 +1,5 @@
-// Blinks the Builtin In LED on Arduino UNO (ATMega328p) at 1 Hz
-// using timer interrupts
+// Blinks the Builtin In LED on Arduino UNO (ATMega328p) at varying frequency
+// down to 1 Hz using timer interrupts
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
@@ -8,20 +8,30 @@
 #define SET_BIT(PORT,BIT) PORT |= (1<<BIT)
 #define CLR_BIT(PORT,BIT) PORT &= ~(1<<BIT)
 
+volatile unsigned timer1_compare_match = 0;
+
 ISR(TIMER1_COMPB_vect)
 {
 	toggle_BIT(PORTB,PD5);
+	timer1_compare_match += 3000; // Vary the blink frequency
+	ICR1 = timer1_compare_match; 
 }
 
 void setup_isr()
 {
-	TCCR1B |= 1<<WGM13 | 1<<WGM12;	// Mode 12, CTC
-	TIMSK1 |= 1<<OCIE1B;            // Enable Timer/Counter1 output compare B
-									//   match interrupt
-
+	// Set Timer 1 to Mode 12, CTC
+	SET_BIT(TCCR1B, WGM12);
+	SET_BIT(TCCR1B, WGM13);
+	
+	// Set Prescaler to 256 to have 0.57 Hz at full count 
 	//16 bit timer. Max count is 65535
 	//16,000,000 / 2 * 256 * (1+65535) = 0.57 Hz (1/2s on, 1/2s off)
-	TCCR1B = 1 << CS12; //256 pre-scaler
+	SET_BIT(TCCR1B, CS12);
+	
+	// Enable Timer1 interrupt to use compare mode
+	SET_BIT(TIMSK1, OCIE1B);
+
+	ICR1 = timer1_compare_match;
 }
 
 int main(void)
